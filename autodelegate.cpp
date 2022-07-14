@@ -38,7 +38,7 @@ public:
         .send();
   }
 
-  ACTION adduser(eosio::name user) {
+  [[eosio::action]] void adduser(eosio::name user) {
     require_auth(get_self());
     auto adu = autodelusers(get_self(), get_self().value);
     auto it = adu.find(user.value);
@@ -49,7 +49,7 @@ public:
     adu.emplace(get_self(), [&](auto &row) { row.user = user; });
   }
 
-  ACTION rmuser(eosio::name user) {
+  [[eosio::action]] void rmuser(eosio::name user) {
     require_auth(get_self());
 
     auto adu = autodelusers(get_self(), get_self().value);
