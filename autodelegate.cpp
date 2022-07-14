@@ -23,6 +23,9 @@ CONTRACT autodelegate : public eosio::contract
 																return;
 												}
 
+												auto adu = autodelusers(get_self(), get_self().value);
+												adu.require_find(from.value, "User is not on the allow list.");
+
 												eosio::check(get_first_receiver() == eosio::name("eosio.token"), "Invalid token contract");
 
 
@@ -48,4 +51,38 @@ CONTRACT autodelegate : public eosio::contract
 																								false)
 																		 ).send();
 								}
+
+								ACTION adduser(eosio::name user)
+								{
+												require_auth(get_self());
+												auto adu = autodelusers(get_self(), get_self().value);
+												auto it = adu.find(user.value);
+
+												if (it != adu.end())
+												{
+																return;
+												}
+												adu.emplace(get_self(), [&](auto &row)
+																				{
+																				row.user = user;
+																				});
+
+								}
+
+								ACTION rmuser(eosio::name user)
+								{
+												require_auth(get_self());
+
+												auto adu = autodelusers(get_self(), get_self().value);
+												auto e = adu.require_find(user.value, "User is not on the allow list.");
+
+												adu.erase(e);
+								}
+				private:
+								struct [[eosio::table("autodelusers")]] autodeluser {
+												eosio::name user;
+
+												auto primary_key() const { return user.value; };
+								};
+								typedef eosio::multi_index<eosio::name("autodelusers"), autodeluser> autodelusers;
 };
